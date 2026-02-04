@@ -10,15 +10,18 @@ let testFranchiseId;
 let testStoreId;
 
 beforeAll(async () => {
+  // Login as admin first
+  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
+  if (adminRes.status !== 200) {
+    throw new Error(`Admin login failed: ${adminRes.status}`);
+  }
+  adminAuthToken = adminRes.body.token;
+
   // Register a test user
   testUser = { name: 'pizza diner', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'a' };
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
   testUser.id = registerRes.body.user.id;
-
-  // Login as admin
-  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
-  adminAuthToken = adminRes.body.token;
 
   // Register a franchisee user
   franchiseeUser = { name: 'franchisee', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'franchisee' };
