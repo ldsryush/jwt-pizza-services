@@ -15,17 +15,26 @@ beforeAll(async () => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   let adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
+  if (!adminRes.body.token) {
+    throw new Error(`Admin login failed: ${JSON.stringify(adminRes.body)}`);
+  }
   adminAuthToken = adminRes.body.token;
 
-  // Register a test user
-  testUser = { name: 'pizza diner', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'a' };
+  // Register a test user with timestamp for uniqueness
+  testUser = { name: 'pizza diner', email: `test${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'a' };
   const registerRes = await request(app).post('/api/auth').send(testUser);
+  if (!registerRes.body.token || !registerRes.body.user) {
+    throw new Error(`User registration failed: ${JSON.stringify(registerRes.body)}`);
+  }
   testUserAuthToken = registerRes.body.token;
   testUser.id = registerRes.body.user.id;
 
   // Register a franchisee user
-  franchiseeUser = { name: 'franchisee', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'franchisee' };
+  franchiseeUser = { name: 'franchisee', email: `franchisee${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'franchisee' };
   const franchiseeRes = await request(app).post('/api/auth').send(franchiseeUser);
+  if (!franchiseeRes.body.token || !franchiseeRes.body.user) {
+    throw new Error(`Franchisee registration failed: ${JSON.stringify(franchiseeRes.body)}`);
+  }
   franchiseeAuthToken = franchiseeRes.body.token;
   franchiseeUser.id = franchiseeRes.body.user.id;
 });

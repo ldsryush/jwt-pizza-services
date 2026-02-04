@@ -5,14 +5,17 @@ const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 
 beforeAll(async () => {
-  testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+  testUser.email = `test${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`;
   const registerRes = await request(app).post('/api/auth').send(testUser);
+  if (!registerRes.body.token) {
+    throw new Error(`Registration failed: ${JSON.stringify(registerRes.body)}`);
+  }
   testUserAuthToken = registerRes.body.token;
   expectValidJwt(testUserAuthToken);
 });
 
 test('register', async () => {
-  const newUser = { name: 'test user', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'password123' };
+  const newUser = { name: 'test user', email: `newuser${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'password123' };
   const registerRes = await request(app).post('/api/auth').send(newUser);
   
   expect(registerRes.status).toBe(200);

@@ -10,11 +10,17 @@ beforeAll(async () => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
+  if (!adminRes.body.token) {
+    throw new Error(`Admin login failed: ${JSON.stringify(adminRes.body)}`);
+  }
   adminAuthToken = adminRes.body.token;
 
-  // Register a test user
-  testUser = { name: 'pizza diner', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'a' };
+  // Register a test user with timestamp for uniqueness
+  testUser = { name: 'pizza diner', email: `test${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'a' };
   const registerRes = await request(app).post('/api/auth').send(testUser);
+  if (!registerRes.body.token || !registerRes.body.user) {
+    throw new Error(`User registration failed: ${JSON.stringify(registerRes.body)}`);
+  }
   testUserAuthToken = registerRes.body.token;
   testUser.id = registerRes.body.user.id;
 });
@@ -92,7 +98,7 @@ describe('User Router Tests', () => {
   });
 
   test('update different user as non-admin', async () => {
-    const otherUser = { name: 'other user', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'pass' };
+    const otherUser = { name: 'other user', email: `other${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'pass' };
     const otherRes = await request(app).post('/api/auth').send(otherUser);
     const otherUserId = otherRes.body.user.id;
     
