@@ -344,11 +344,18 @@ class DB {
           await connection.query(statement);
         }
 
-        // Always ensure admin user exists
+        // Always ensure admin user exists - insert directly to avoid deadlock
         const [existingAdmin] = await connection.query('SELECT * FROM user WHERE email=?', ['a@jwt.com']);
         if (existingAdmin.length === 0) {
-          const defaultAdmin = { name: '常用名字', email: 'a@jwt.com', password: 'admin', roles: [{ role: Role.Admin }] };
-          await this.addUser(defaultAdmin);
+          const hashedPassword = await bcrypt.hash('admin', 10);
+          const [userResult] = await connection.query(
+            'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
+            ['常用名字', 'a@jwt.com', hashedPassword]
+          );
+          await connection.query(
+            'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
+            [userResult.insertId, Role.Admin, 0]
+          );
         }
       } finally {
         connection.end();
