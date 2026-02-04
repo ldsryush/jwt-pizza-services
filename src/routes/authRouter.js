@@ -11,14 +11,14 @@ authRouter.docs = [
     method: 'POST',
     path: '/api/auth',
     description: 'Register a new user',
-    example: `curl -X POST localhost:3000/api/auth -d '{"name":"pizza diner", "email":"d@jwt.com", "password":"diner"}' -H 'Content-Type: application/json'`,
+    example: 'curl -X POST localhost:3000/api/auth -d \'{"name":"pizza diner", "email":"d@jwt.com", "password":"diner"}\' -H \'Content-Type: application/json\'',
     response: { user: { id: 2, name: 'pizza diner', email: 'd@jwt.com', roles: [{ role: 'diner' }] }, token: 'tttttt' },
   },
   {
     method: 'PUT',
     path: '/api/auth',
     description: 'Login existing user',
-    example: `curl -X PUT localhost:3000/api/auth -d '{"email":"a@jwt.com", "password":"admin"}' -H 'Content-Type: application/json'`,
+    example: 'curl -X PUT localhost:3000/api/auth -d \'{"email":"a@jwt.com", "password":"admin"}\' -H \'Content-Type: application/json\'',
     response: { user: { id: 1, name: '常用名字', email: 'a@jwt.com', roles: [{ role: 'admin' }] }, token: 'tttttt' },
   },
   {
@@ -26,7 +26,7 @@ authRouter.docs = [
     path: '/api/auth',
     requiresAuth: true,
     description: 'Logout a user',
-    example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
+    example: 'curl -X DELETE localhost:3000/api/auth -H \'Authorization: Bearer tttttt\'',
     response: { message: 'logout successful' },
   },
 ];
