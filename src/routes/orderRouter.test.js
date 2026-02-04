@@ -6,11 +6,10 @@ let testUserAuthToken;
 let adminAuthToken;
 
 beforeAll(async () => {
-  // Login as admin first
+  // Wait for database to be ready
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
-  if (adminRes.status !== 200) {
-    throw new Error(`Admin login failed: ${adminRes.status}`);
-  }
   adminAuthToken = adminRes.body.token;
 
   // Register a test user

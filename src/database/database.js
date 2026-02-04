@@ -344,9 +344,11 @@ class DB {
           await connection.query(statement);
         }
 
-        if (!dbExists) {
+        // Always ensure admin user exists
+        const [existingAdmin] = await connection.query('SELECT * FROM user WHERE email=?', ['a@jwt.com']);
+        if (existingAdmin.length === 0) {
           const defaultAdmin = { name: '常用名字', email: 'a@jwt.com', password: 'admin', roles: [{ role: Role.Admin }] };
-          this.addUser(defaultAdmin);
+          await this.addUser(defaultAdmin);
         }
       } finally {
         connection.end();

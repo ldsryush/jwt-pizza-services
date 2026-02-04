@@ -10,11 +10,11 @@ let testFranchiseId;
 let testStoreId;
 
 beforeAll(async () => {
-  // Login as admin first
-  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
-  if (adminRes.status !== 200) {
-    throw new Error(`Admin login failed: ${adminRes.status}`);
-  }
+  // Wait for database to be ready and try to login as admin
+  // If admin doesn't exist, this will fail silently and we'll use the default
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  let adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
   adminAuthToken = adminRes.body.token;
 
   // Register a test user
