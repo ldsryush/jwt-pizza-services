@@ -1,26 +1,31 @@
 const request = require('supertest');
 const app = require('../service');
+const { DB, Role } = require('../database/database');
 
 let testUser;
 let testUserAuthToken;
 let adminAuthToken;
 
+const adminCredentials = {
+  name: 'User Admin',
+  email: `user-admin-${Date.now()}@test.com`,
+  password: 'admin',
+};
+
 beforeAll(async () => {
-  // Wait for database to be ready
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Directly create admin user in database
+  await DB.addUser({ ...adminCredentials, roles: [{ role: Role.Admin }] });
   
-  const adminRes = await request(app).put('/api/auth').send({ email: 'a@jwt.com', password: 'admin' });
-  if (!adminRes.body.token) {
-    throw new Error(`Admin login failed: ${JSON.stringify(adminRes.body)}`);
-  }
+  const adminRes = await request(app).put('/api/auth').send({ 
+    email: adminCredentials.email, 
+    password: adminCredentials.password 
+  });
+  expect(adminRes.status).toBe(200);
   adminAuthToken = adminRes.body.token;
 
-  // Register a test user with timestamp for uniqueness
+  // Register a test user
   testUser = { name: 'pizza diner', email: `test${Date.now()}${Math.floor(Math.random() * 1000)}@test.com`, password: 'a' };
   const registerRes = await request(app).post('/api/auth').send(testUser);
-  if (!registerRes.body.token || !registerRes.body.user) {
-    throw new Error(`User registration failed: ${JSON.stringify(registerRes.body)}`);
-  }
   testUserAuthToken = registerRes.body.token;
   testUser.id = registerRes.body.user.id;
 });
