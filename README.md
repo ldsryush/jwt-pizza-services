@@ -10,26 +10,6 @@ JWTs are used for authentication objects.
 
 In order for the server to work correctly it must be configured by providing a `config.js` file.
 
-```js
-module.exports =  {
-    // Your JWT secret can be any random string you would like. It just needs to be secret.
-   jwtSecret: 'ILikePython',
-   db: {
-   connection: {
-      host: '127.0.0.1',
-      user: 'root',
-      password: 'Sanghwa1204',
-      database: 'pizza',
-      connectTimeout: 60000,
-   },
-   listPerPage: 10,
-   },
-   factory: {
-   url: 'https://pizza.pizzasanghwa.click',
-   apiKey: 'fb3ff04b8f9d45e3b7ea2fef33d5b457',
-   },
-};
-```
 
 ## Endpoints
 
