@@ -8,5 +8,7 @@ module.exports = {
   ],
   coverageReporters: ['text', 'lcov', 'json-summary'],
   testMatch: ['**/*.test.js'],
-  verbose: true
+  verbose: true,
+  setupFilesAfterEnv: ['<rootDir>/src/testSetup.js'],
+  testTimeout: 30000
 };

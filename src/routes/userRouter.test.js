@@ -28,6 +28,11 @@ beforeAll(async () => {
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
   testUser.id = registerRes.body.user.id;
+}, 30000);
+
+afterAll(async () => {
+  // Allow time for any pending operations to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
 });
 
 describe('User Router Tests', () => {

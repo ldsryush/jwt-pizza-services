@@ -12,6 +12,11 @@ beforeAll(async () => {
   }
   testUserAuthToken = registerRes.body.token;
   expectValidJwt(testUserAuthToken);
+}, 30000);
+
+afterAll(async () => {
+  // Allow time for any pending operations to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
 });
 
 test('register', async () => {
