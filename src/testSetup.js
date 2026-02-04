@@ -1,5 +1,4 @@
 // Global test setup and teardown
-const { DB } = require('./database/database');
 
 // Increase timeout for all tests to account for database operations
 jest.setTimeout(30000);
