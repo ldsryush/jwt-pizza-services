@@ -63,7 +63,8 @@ describe('Franchise Router Tests', () => {
     expect(res.body).toHaveProperty('id');
     expect(res.body.name).toBe(franchise.name);
     expect(res.body.admins).toBeDefined();
-    expect(res.body.admins[0].email).toBe(franchiseeUser.email);
+    expect(res.body.admins.length).toBe(1);
+    expect(res.body.admins[0]).toMatchObject({ email: franchiseeUser.email });
     
     testFranchiseId = res.body.id;
   });
