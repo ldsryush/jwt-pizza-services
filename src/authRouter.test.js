@@ -59,7 +59,6 @@ test('logout', async () => {
   expect(logoutRes.status).toBe(200);
   expect(logoutRes.body.message).toBe('logout successful');
   
-  // Re-login after logout for other tests
   const loginRes = await request(app).put('/api/auth').send(testUser);
   testUserAuthToken = loginRes.body.token;
 });
