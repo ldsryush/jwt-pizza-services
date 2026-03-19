@@ -1,6 +1,6 @@
 const config = require('./config.js');
 const os = require('os');
-// fixed
+// pay
 class Metrics {
   constructor() {
     this.httpMetrics = {
