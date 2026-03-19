@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
+const metrics = require('../metrics.js');
 
 const authRouter = express.Router();
 
@@ -65,6 +66,7 @@ authRouter.post(
     }
     const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
     const auth = await setAuth(user);
+    metrics.trackAuthAttempt(true, user.id);
     res.json({ user: user, token: auth });
   })
 );
@@ -74,9 +76,15 @@ authRouter.put(
   '/',
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const user = await DB.getUser(email, password);
-    const auth = await setAuth(user);
-    res.json({ user: user, token: auth });
+    try {
+      const user = await DB.getUser(email, password);
+      const auth = await setAuth(user);
+      metrics.trackAuthAttempt(true, user.id);
+      res.json({ user: user, token: auth });
+    } catch (error) {
+      metrics.trackAuthAttempt(false);
+      throw error;
+    }
   })
 );
 
@@ -85,6 +93,7 @@ authRouter.delete(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    metrics.trackUserLogout(req.user.id);
     await clearAuth(req);
     res.json({ message: 'logout successful' });
   })
