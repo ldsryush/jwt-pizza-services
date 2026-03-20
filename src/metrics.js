@@ -156,43 +156,50 @@ class Metrics {
 
   // Send metrics to Grafana in Prometheus format
   async sendMetricsToGrafana(metrics) {
-    const now = Date.now();
-    
-    // Convert metrics to Prometheus remote write format
-    const timeseries = metrics.map(metric => ({
-      labels: [
-        { name: '__name__', value: metric.name },
-        { name: 'source', value: config.metrics.source },
-        { name: 'job', value: 'jwt-pizza-service' },
-      ],
-      samples: [
-        {
-          value: metric.value,
-          timestamp: now,
-        },
-      ],
-    }));
+  const now = Date.now();
 
-    const body = JSON.stringify({ timeseries });
+  for (const metric of metrics) {
+    const body = JSON.stringify({
+      resourceMetrics: [{
+        scopeMetrics: [{
+          metrics: [{
+            name: metric.name,
+            unit: '1',
+            gauge: {
+              dataPoints: [{
+                asInt: Math.round(metric.value),
+                timeUnixNano: now * 1000000,
+                attributes: [{
+                  key: 'source',
+                  value: { stringValue: config.metrics.source }
+                }]
+              }]
+            }
+          }]
+        }]
+      }]
+    });
+
+    const encoded = Buffer.from(`${config.metrics.accountId}:${config.metrics.apiKey}`).toString('base64');
 
     try {
-      const response = await fetch(`${config.metrics.endpointUrl}`, {
+      const response = await fetch(config.metrics.endpointUrl, {
         method: 'POST',
+        body,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.metrics.accountId}:${config.metrics.apiKey}`,
+          'Authorization': `Basic ${encoded}`,
         },
-        body: body,
       });
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to send metrics to Grafana:', response.statusText, errorText);
+        const text = await response.text();
+        console.error(`Failed to push ${metric.name}:`, text);
       }
     } catch (error) {
-      console.error('Error sending metrics to Grafana:', error.message);
+      console.error('Error pushing metric:', metric.name, error.message);
     }
   }
+}
 
   // Periodically send metrics
   sendMetricsPeriodically(period) {
