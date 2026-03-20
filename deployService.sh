@@ -15,7 +15,7 @@ service="jwt-pizza-service"
 
 printf "\n----> Deploying $service to $hostname with $key\n"
 
-# Step 1
+# Step 1.
 printf "\n----> Build the distribution package\n"
 rm -rf dist
 mkdir dist
