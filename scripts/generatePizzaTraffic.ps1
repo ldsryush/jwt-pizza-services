@@ -1,12 +1,12 @@
 # generatePizzaTraffic.ps1 - Simulate pizza service traffic
-# Usage: .\scripts\generatePizzaTraffic.ps1 -host https://pizza-service.pizzasanghwa.click
+# Usage: .\scripts\generatePizzaTraffic.ps1 -serviceUrl https://pizza-service.pizzasanghwa.click
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$host
+    [string]$serviceUrl
 )
 
-Write-Host "Targeting host: $host"
+Write-Host "Targeting host: $serviceUrl"
 Write-Host "Press Ctrl-C to stop all traffic simulation"
 Write-Host "-------------------------------------------"
 
@@ -27,7 +27,7 @@ $job1 = Start-Job -ScriptBlock {
         }
         Start-Sleep 3
     }
-} -ArgumentList $host
+} -ArgumentList $serviceUrl
 
 # Background job 2: Invalid login every 25 seconds
 $job2 = Start-Job -ScriptBlock {
@@ -43,7 +43,7 @@ $job2 = Start-Job -ScriptBlock {
         }
         Start-Sleep 25
     }
-} -ArgumentList $host
+} -ArgumentList $serviceUrl
 
 # Background job 3: Franchisee login, wait 110s, logout
 $job3 = Start-Job -ScriptBlock {
@@ -62,7 +62,7 @@ $job3 = Start-Job -ScriptBlock {
         }
         Start-Sleep 10
     }
-} -ArgumentList $host
+} -ArgumentList $serviceUrl
 
 # Background job 4: Diner login, buy pizza, logout
 $job4 = Start-Job -ScriptBlock {
@@ -89,7 +89,7 @@ $job4 = Start-Job -ScriptBlock {
         }
         Start-Sleep 30
     }
-} -ArgumentList $host
+} -ArgumentList $serviceUrl
 
 # Background job 5: Buy too many pizzas (overflow, causes factory failure)
 $job5 = Start-Job -ScriptBlock {
@@ -117,7 +117,7 @@ $job5 = Start-Job -ScriptBlock {
         }
         Start-Sleep 295
     }
-} -ArgumentList $host
+} -ArgumentList $serviceUrl
 
 $jobs = @($job1, $job2, $job3, $job4, $job5)
 Write-Host "All traffic generators started (Job IDs: $($jobs.Id -join ', '))"
