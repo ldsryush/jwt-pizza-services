@@ -1,0 +1,9 @@
+# Force shell scripts to always use LF line endings (prevents CRLF issues on Windows)
+*.sh text eol=lf
+
+# Other text files use platform default
+*.js text
+*.json text
+*.md text
+*.yml text
+*.yaml text
