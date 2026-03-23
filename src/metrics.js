@@ -107,8 +107,6 @@ class Metrics {
 
   // Build metrics in OpenTelemetry format
   buildMetrics() {
-    const now = Date.now();
-
     // Calculate average latencies
     const serviceLatency = this.latencyMetrics.serviceEndpoints.length > 0
       ? this.latencyMetrics.serviceEndpoints.reduce((sum, m) => sum + m.latency, 0) / this.latencyMetrics.serviceEndpoints.length

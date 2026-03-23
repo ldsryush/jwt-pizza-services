@@ -1,0 +1,38 @@
+// Configuration template for JWT Pizza Service
+// Copy this file to config.js and update with your actual values
+
+module.exports = {
+  jwtSecret: process.env.JWT_SECRET || 'your-jwt-secret-here',
+  
+  db: {
+    connection: {
+      host: process.env.DB_HOST || '127.0.0.1',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || 'tempdbpassword',
+      database: process.env.DB_NAME || 'pizza',
+      connectTimeout: 60000,
+    },
+    listPerPage: 10,
+  },
+  
+  factory: {
+    url: process.env.FACTORY_URL || 'https://pizza-factory.cs329.click',
+    apiKey: process.env.FACTORY_API_KEY || 'your-factory-api-key',
+  },
+  
+  // Metrics configuration for Grafana Cloud
+  metrics: {
+    source: process.env.METRICS_SOURCE || 'dev',
+    accountId: process.env.GRAFANA_ACCOUNT_ID || 'your-account-id',
+    apiKey: process.env.GRAFANA_API_KEY || 'your-grafana-api-key',
+    endpointUrl: process.env.GRAFANA_METRICS_URL || 'https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/metrics',
+  },
+  
+  // Logging configuration for Grafana Loki
+  logging: {
+    enabled: process.env.LOGGING_ENABLED === 'true' || true,
+    userId: process.env.GRAFANA_USER_ID || process.env.GRAFANA_ACCOUNT_ID || 'your-account-id',
+    apiKey: process.env.GRAFANA_LOKI_API_KEY || process.env.GRAFANA_API_KEY || 'your-loki-api-key',
+    endpoint: process.env.GRAFANA_LOKI_URL || 'https://logs-prod-006.grafana.net/loki/api/v1/push',
+  },
+};
