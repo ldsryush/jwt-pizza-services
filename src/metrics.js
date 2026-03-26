@@ -3,6 +3,7 @@ const os = require('os');
 
 class Metrics {
   constructor() {
+    // Period-based HTTP request counters (reset each interval)
     this.httpMetrics = {
       total: 0,
       get: 0,
@@ -11,47 +12,50 @@ class Metrics {
       delete: 0,
     };
 
+    // Period-based auth counters (reset each interval)
     this.authMetrics = {
       successful: 0,
       failed: 0,
     };
 
+    // Active users (Set tracks unique logged-in users)
     this.activeUsers = new Set();
 
+    // Period-based pizza counters (reset each interval)
     this.pizzaMetrics = {
       sold: 0,
       failures: 0,
       revenue: 0,
     };
 
-    this.latencyMetrics = {
-      serviceEndpoints: [],
-      pizzaCreation: [],
-    };
+    // Period-based latency tracking (reset each interval)
+    this.latencyServiceTotal = 0;
+    this.latencyServiceCount = 0;
+    this.latencyPizzaTotal = 0;
+    this.latencyPizzaCount = 0;
+
+    // Last known latency values (fallback when no requests in window)
+    this.lastServiceLatency = 0;
+    this.lastPizzaLatency = 0;
 
     // Send metrics to Grafana every 10 seconds
     this.sendMetricsPeriodically(10000);
   }
 
-  // Middleware to track HTTP requests
+  // Middleware to track HTTP requests and service latency
   requestTracker = (req, res, next) => {
     const startTime = Date.now();
 
-    // Track HTTP method
     this.httpMetrics.total++;
     const method = req.method.toLowerCase();
     if (this.httpMetrics[method] !== undefined) {
       this.httpMetrics[method]++;
     }
 
-    // Track latency for all service endpoints
     res.on('finish', () => {
       const latency = Date.now() - startTime;
-      this.latencyMetrics.serviceEndpoints.push({
-        path: req.path,
-        method: req.method,
-        latency: latency,
-      });
+      this.latencyServiceTotal += latency;
+      this.latencyServiceCount++;
     });
 
     next();
@@ -76,7 +80,7 @@ class Metrics {
     }
   }
 
-  // Track pizza purchases
+  // Track pizza purchases (called from orderRouter)
   pizzaPurchase(success, latency, revenue) {
     if (success) {
       this.pizzaMetrics.sold++;
@@ -85,126 +89,144 @@ class Metrics {
       this.pizzaMetrics.failures++;
     }
 
-    this.latencyMetrics.pizzaCreation.push({
-      latency: latency,
-      success: success,
-    });
+    this.latencyPizzaTotal += latency;
+    this.latencyPizzaCount++;
   }
 
-  // Get system metrics
+  // Get CPU usage as a float percentage
   getCpuUsagePercentage() {
     const cpuUsage = os.loadavg()[0] / os.cpus().length;
-    return cpuUsage.toFixed(2) * 100;
+    return parseFloat((cpuUsage * 100).toFixed(2));
   }
 
+  // Get memory usage as a float percentage
   getMemoryUsagePercentage() {
     const totalMemory = os.totalmem();
     const freeMemory = os.freemem();
     const usedMemory = totalMemory - freeMemory;
-    const memoryUsage = (usedMemory / totalMemory) * 100;
-    return memoryUsage.toFixed(2);
+    return parseFloat(((usedMemory / totalMemory) * 100).toFixed(2));
   }
 
-  // Build metrics in OpenTelemetry format
+  // Build the metrics snapshot, then reset period counters
   buildMetrics() {
-    // Calculate average latencies
-    const serviceLatency = this.latencyMetrics.serviceEndpoints.length > 0
-      ? this.latencyMetrics.serviceEndpoints.reduce((sum, m) => sum + m.latency, 0) / this.latencyMetrics.serviceEndpoints.length
-      : 0;
+    // Multiply by 6 to estimate per-minute rate from 10-second window
+    const perMinuteFactor = 6;
 
-    const pizzaLatency = this.latencyMetrics.pizzaCreation.length > 0
-      ? this.latencyMetrics.pizzaCreation.reduce((sum, m) => sum + m.latency, 0) / this.latencyMetrics.pizzaCreation.length
-      : 0;
+    // Calculate average latencies for this window
+    const serviceLatency = this.latencyServiceCount > 0
+      ? this.latencyServiceTotal / this.latencyServiceCount
+      : this.lastServiceLatency;
+
+    const pizzaLatency = this.latencyPizzaCount > 0
+      ? this.latencyPizzaTotal / this.latencyPizzaCount
+      : this.lastPizzaLatency;
+
+    // Preserve last known latency for idle windows
+    if (this.latencyServiceCount > 0) this.lastServiceLatency = serviceLatency;
+    if (this.latencyPizzaCount > 0) this.lastPizzaLatency = pizzaLatency;
 
     const metrics = [
-      // HTTP metrics
-      { name: 'http_requests_total', value: this.httpMetrics.total },
-      { name: 'http_requests_get', value: this.httpMetrics.get },
-      { name: 'http_requests_post', value: this.httpMetrics.post },
-      { name: 'http_requests_put', value: this.httpMetrics.put },
-      { name: 'http_requests_delete', value: this.httpMetrics.delete },
+      // HTTP request rates per minute
+      { name: 'http_requests_total',  value: this.httpMetrics.total  * perMinuteFactor },
+      { name: 'http_requests_get',    value: this.httpMetrics.get    * perMinuteFactor },
+      { name: 'http_requests_post',   value: this.httpMetrics.post   * perMinuteFactor },
+      { name: 'http_requests_put',    value: this.httpMetrics.put    * perMinuteFactor },
+      { name: 'http_requests_delete', value: this.httpMetrics.delete * perMinuteFactor },
 
-      // Auth metrics
-      { name: 'auth_attempts_successful', value: this.authMetrics.successful },
-      { name: 'auth_attempts_failed', value: this.authMetrics.failed },
+      // Auth attempt rates per minute
+      { name: 'auth_attempts_successful', value: this.authMetrics.successful * perMinuteFactor },
+      { name: 'auth_attempts_failed',     value: this.authMetrics.failed     * perMinuteFactor },
 
-      // Active users
+      // Active users (point-in-time, no multiplication)
       { name: 'active_users', value: this.activeUsers.size },
 
-      // Pizza metrics
-      { name: 'pizza_sold', value: this.pizzaMetrics.sold },
-      { name: 'pizza_failures', value: this.pizzaMetrics.failures },
-      { name: 'pizza_revenue', value: this.pizzaMetrics.revenue },
+      // Pizza rates per minute
+      { name: 'pizza_sold',     value: this.pizzaMetrics.sold     * perMinuteFactor },
+      { name: 'pizza_failures', value: this.pizzaMetrics.failures * perMinuteFactor },
+      { name: 'pizza_revenue',  value: this.pizzaMetrics.revenue  * perMinuteFactor },
 
-      // Latency metrics
+      // Latency (average ms) – uses last known value if idle
       { name: 'latency_service_avg', value: serviceLatency },
-      { name: 'latency_pizza_avg', value: pizzaLatency },
+      { name: 'latency_pizza_avg',   value: pizzaLatency },
 
-      // System metrics
-      { name: 'cpu_usage_percent', value: this.getCpuUsagePercentage() },
+      // System metrics (point-in-time)
+      { name: 'cpu_usage_percent',    value: this.getCpuUsagePercentage() },
       { name: 'memory_usage_percent', value: this.getMemoryUsagePercentage() },
     ];
 
-    // Clear latency arrays after averaging
-    this.latencyMetrics.serviceEndpoints = [];
-    this.latencyMetrics.pizzaCreation = [];
+    // Reset period counters
+    this.httpMetrics = { total: 0, get: 0, post: 0, put: 0, delete: 0 };
+    this.authMetrics = { successful: 0, failed: 0 };
+    this.pizzaMetrics = { sold: 0, failures: 0, revenue: 0 };
+    this.latencyServiceTotal = 0;
+    this.latencyServiceCount = 0;
+    this.latencyPizzaTotal = 0;
+    this.latencyPizzaCount = 0;
 
     return metrics;
   }
 
-  // Send metrics to Grafana in Prometheus format
+  // Send metrics to Grafana Cloud via OTLP JSON
   async sendMetricsToGrafana(metrics) {
-  const now = Date.now();
-
-  for (const metric of metrics) {
-    const body = JSON.stringify({
-      resourceMetrics: [{
-        scopeMetrics: [{
-          metrics: [{
-            name: metric.name,
-            unit: '1',
-            gauge: {
-              dataPoints: [{
-                asInt: Math.round(metric.value),
-                timeUnixNano: now * 1000000,
-                attributes: [{
-                  key: 'source',
-                  value: { stringValue: config.metrics.source }
-                }]
-              }]
-            }
-          }]
-        }]
-      }]
-    });
+    // Safely compute nanosecond timestamp (avoid exceeding JS max safe integer)
+    const nowMs = Date.now();
+    const timeUnixNano = nowMs.toString() + '000000';
 
     const encoded = Buffer.from(`${config.metrics.accountId}:${config.metrics.apiKey}`).toString('base64');
 
-    try {
-      const response = await fetch(config.metrics.endpointUrl, {
-        method: 'POST',
-        body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${encoded}`,
-        },
+    for (const metric of metrics) {
+      const body = JSON.stringify({
+        resourceMetrics: [{
+          resource: {
+            attributes: [{
+              key: 'service.name',
+              value: { stringValue: config.metrics.source },
+            }],
+          },
+          scopeMetrics: [{
+            metrics: [{
+              name: metric.name,
+              unit: '1',
+              gauge: {
+                dataPoints: [{
+                  asDouble: metric.value,
+                  timeUnixNano: timeUnixNano,
+                  attributes: [{
+                    key: 'source',
+                    value: { stringValue: config.metrics.source },
+                  }],
+                }],
+              },
+            }],
+          }],
+        }],
       });
-      if (!response.ok) {
-        const text = await response.text();
-        console.error(`Failed to push ${metric.name}:`, text);
+
+      try {
+        const response = await fetch(config.metrics.endpointUrl, {
+          method: 'POST',
+          body,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${encoded}`,
+          },
+        });
+        if (!response.ok) {
+          const text = await response.text();
+          console.error(`Failed to push ${metric.name}:`, text);
+        }
+      } catch (error) {
+        console.error('Error pushing metric:', metric.name, error.message);
       }
-    } catch (error) {
-      console.error('Error pushing metric:', metric.name, error.message);
     }
   }
-}
 
-  // Periodically send metrics
+  // Periodically collect and send all metrics
   sendMetricsPeriodically(period) {
     setInterval(async () => {
       try {
-        const metrics = this.buildMetrics();
-        await this.sendMetricsToGrafana(metrics);
+        const builtMetrics = this.buildMetrics();
+        await this.sendMetricsToGrafana(builtMetrics);
       } catch (error) {
         console.error('Error building/sending metrics:', error);
       }
