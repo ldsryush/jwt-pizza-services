@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -18,450 +21,601 @@
   "links": [],
   "panels": [
     {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "HTTP Request Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"http\"}",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Requests (method, path, status, authorization)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"http\", level=\"error\"}",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Errors (4xx / 5xx)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "red", "value": 80 }
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
-          },
-          "unit": "reqpm"
+          }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (level) (count_over_time({source=~\"jwt-pizza-service.*\", type=\"http\"}[1m]))",
+          "legendFormat": "{{level}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Log Events per Minute",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "count_over_time({source=~\"jwt-pizza-service.*\", type=\"http\", level=\"error\"}[$__range])",
+          "legendFormat": "HTTP Errors",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Total HTTP Errors",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 101,
+      "title": "Database Query Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
       "id": 5,
       "options": {
-        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "none" }
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
           "editorMode": "code",
-          "expr": "{__name__=\"http_requests_total_ratio\"}",
-          "legendFormat": "Total",
-          "range": true,
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"db\"}",
+          "legendFormat": "",
+          "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"http_requests_get_ratio\"}",
-          "legendFormat": "GET",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"http_requests_post_ratio\"}",
-          "legendFormat": "POST",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"http_requests_put_ratio\"}",
-          "legendFormat": "PUT",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"http_requests_delete_ratio\"}",
-          "legendFormat": "DELETE",
-          "range": true,
-          "refId": "E"
         }
       ],
-      "title": "HTTP Requests by Method / Minute",
-      "type": "timeseries"
+      "title": "Database SQL Queries",
+      "type": "logs"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "red", "value": 80 }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "Failed" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Successful" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
-          }
-        ]
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-      "id": 7,
-      "options": {
-        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "none" }
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 34
       },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"auth_attempts_successful_ratio\"}",
-          "legendFormat": "Successful",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"auth_attempts_failed_ratio\"}",
-          "legendFormat": "Failed",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Authentication Attempts / Minute",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "red", "value": 80 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "id": 6,
       "options": {
-        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
           "editorMode": "code",
-          "expr": "{__name__=\"active_users_ratio\"}",
-          "legendFormat": "Active Users",
-          "range": true,
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"db\", level=\"error\"}",
+          "legendFormat": "",
+          "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Active Users",
-      "type": "timeseries"
+      "title": "Database Query Errors",
+      "type": "logs"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 102,
+      "title": "Factory Service Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 43
+      },
+      "id": 7,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"factory\"}",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Factory Service Requests (request body, response body)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "orange", "value": 50 },
-              { "color": "red", "value": 85 }
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
-          },
-          "unit": "percent"
+          }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
       "id": 8,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "none" }
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
           "editorMode": "code",
-          "expr": "{__name__=\"cpu_usage_percent_ratio\"}",
-          "legendFormat": "CPU %",
-          "range": true,
+          "expr": "sum by (level) (count_over_time({source=~\"jwt-pizza-service.*\", type=\"factory\"}[1m]))",
+          "legendFormat": "{{level}}",
+          "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"memory_usage_percent_ratio\"}",
-          "legendFormat": "Memory %",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "CPU & Memory Usage %",
+      "title": "Factory Requests per Minute",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "red", "value": 80 }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "Failures / min" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Revenue / min (₿)" },
-            "properties": [
-              { "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } },
-              { "id": "custom.axisPlacement", "value": "right" }
-            ]
-          }
-        ]
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 59
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 103,
+      "title": "Exceptions & Errors",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 60
+      },
       "id": 9,
       "options": {
-        "legend": { "calcs": ["lastNotNull", "sum"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "none" }
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
           "editorMode": "code",
-          "expr": "{__name__=\"pizza_sold_ratio\"}",
-          "legendFormat": "Sold / min",
-          "range": true,
+          "expr": "{source=~\"jwt-pizza-service.*\", type=\"exception\"}",
+          "legendFormat": "",
+          "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"pizza_failures_ratio\"}",
-          "legendFormat": "Failures / min",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"pizza_revenue_ratio\"}",
-          "legendFormat": "Revenue / min (₿)",
-          "range": true,
-          "refId": "C"
         }
       ],
-      "title": "Pizza Metrics / Minute",
-      "type": "timeseries"
+      "title": "Unhandled Exceptions",
+      "type": "logs"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": 0 },
-              { "color": "red", "value": 80 }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
       "id": 10,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "none" }
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
           "editorMode": "code",
-          "expr": "{__name__=\"latency_service_avg_ratio\"}",
-          "legendFormat": "Service Endpoint (avg ms)",
-          "range": true,
+          "expr": "{source=~\"jwt-pizza-service.*\", level=\"error\"}",
+          "legendFormat": "",
+          "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "grafanacloud-prom" },
-          "editorMode": "code",
-          "expr": "{__name__=\"latency_pizza_avg_ratio\"}",
-          "legendFormat": "Pizza Creation (avg ms)",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "Latency (ms)",
-      "type": "timeseries"
+      "title": "All Error-Level Logs",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 76
+      },
+      "id": 104,
+      "title": "All Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 77
+      },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{source=~\"jwt-pizza-service.*\"}",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "All JWT Pizza Service Logs",
+      "type": "logs"
     }
   ],
   "preload": false,
   "schemaVersion": 42,
-  "tags": ["jwt-pizza", "metrics", "observability"],
-  "templating": { "list": [] },
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "logging",
+    "jwt-pizza",
+    "loki"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
-  "title": "JWT Pizza – Metrics Dashboard",
+  "title": "JWT Pizza Logs",
   "weekStart": "",
-  "version": 30,
-  "uid": "ldwln42",
-  "id": 3611839060475904
+  "version": 1,
+  "uid": "jwt-pizza-logs-d9",
+  "id": 308622490849280
 }
